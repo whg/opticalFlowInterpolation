@@ -2,6 +2,10 @@
 
 #include "ofMain.h"
 
+
+#include "ofxOpenCv.h"
+#include "opencv.hpp"
+
 class ofApp : public ofBaseApp{
 
 public:
@@ -19,4 +23,7 @@ public:
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
     
+    void getMap(cv::Mat &one, cv::Mat &two);
+    
+    int position;
 };
