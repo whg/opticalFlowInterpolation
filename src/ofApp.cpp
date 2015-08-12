@@ -12,32 +12,44 @@ cv::Mat newFrame;
 ofImage newImage;
 cv::Mat flow;
 
+#include "ofxFrameInterpolator.h"
+
+ofxFrameInterpolator fi;
+ofVideoPlayer player;
+
+ofImage diff;
 
 void ofApp::setup(){
 
     ofBackground(10);
     
+    player.loadMovie("/Users/whg/Code/of_v0.8.0_osx_release/examples/gl/multiTextureShaderExample/bin/data/fingers.mov");
+    
+    player.nextFrame();
+    
+    
     int d = 2;
 
-    img1.load("/Users/whg/Library/Containers/com.apple.PhotoBooth/Data/Pictures/Photo Booth Library/Pictures/Photo on 23-07-2015 at 19.53.jpg");
+    img1.loadImage("/Users/whg/Library/Containers/com.apple.PhotoBooth/Data/Pictures/Photo Booth Library/Pictures/Photo on 23-07-2015 at 19.53.jpg");
     img1.resize(img1.width/d, img1.height/d);
-    img1.setImageType(OF_IMAGE_GRAYSCALE);
+//    img1.setImageType(OF_IMAGE_GRAYSCALE);
     ofxCvGrayscaleImage cvimg1;
-    cvimg1.setFromPixels(img1.getPixels());
+//    cvimg1.setFromPixels(img1.getPixels());
     
 //    IplImage *iplimg1 = cvimg1.getCvImage();
-    one = cv::Mat(cvimg1.getCvImage(), true);
+//    one = cv::Mat(cvimg1.getCvImage(), true);
+    one = cv::Mat(img1.height, img1.width, CV_8UC3, img1.getPixels(), 0);
     
-    img2.load("/Users/whg/Library/Containers/com.apple.PhotoBooth/Data/Pictures/Photo Booth Library/Pictures/Photo on 23-07-2015 at 19.53 #2.jpg");
+    img2.loadImage("/Users/whg/Library/Containers/com.apple.PhotoBooth/Data/Pictures/Photo Booth Library/Pictures/Photo on 23-07-2015 at 19.53 #2.jpg");
     img2.resize(img2.width/d, img2.height/d);
-    img2.setImageType(OF_IMAGE_GRAYSCALE);
+//    img2.setImageType(OF_IMAGE_GRAYSCALE);
     ofxCvGrayscaleImage cvimg2;
-    cvimg2.setFromPixels(img2.getPixels());
+//    cvimg2.setFromPixels(img2.getPixels());
     
-    two = cv::Mat(cvimg2.getCvImage(), true);
+//    two = cv::Mat(cvimg2.getCvImage(), true);
+    two = cv::Mat(img2.height, img2.width, CV_8UC3, img2.getPixels(), 0);
 //    IplImage *iplimg2 = cvimg2.getCvImage();
     
-
 //    CvMat *flow = cvCreateMat(img1.height, img1.width, CV_32FC2);
 //    cv::OutputArray
 
@@ -48,7 +60,17 @@ void ofApp::setup(){
     result.allocate(one.cols, one.rows, OF_IMAGE_COLOR);
 
 
+    fi = ofxFrameInterpolator(player.width, player.height);
     
+//    fi.calcMap(img1, img2);
+    ofPixels o = player.getPixelsRef();
+    o.setImageType(OF_IMAGE_GRAYSCALE);
+    player.nextFrame();
+    ofPixels t = player.getPixelsRef();
+    t.setImageType(OF_IMAGE_GRAYSCALE);
+    fi.calcMap(o, t);
+
+    float start = ofGetElapsedTimef();
 
 //    flowMapX = one.clone(); //cv::Mat::zeros(flow.cols, flow.rows, CV_32F); // cv::Mat(flow.size(), CV_32F);
 //    flowMapY = one.clone(); //cv::Mat::zeros(flow.cols, flow.rows, CV_32F); //(flow.size(), CV_32F);
@@ -60,11 +82,24 @@ void ofApp::setup(){
 //    tflowMapX = one.clone();// flowMapX.clone();
 //    tflowMapY = one.clone();//flowMapY.clone();
 
-    getMap(one, two);
-    
+//    getMap(one, two);
     
 
-    newImage.allocate(img1.width, img1.height, OF_IMAGE_GRAYSCALE);
+    
+//    string filename = "/Users/whg/Desktop/out.yml.gz";
+//    cv::FileStorage fs(filename, cv::FileStorage::WRITE);
+//    
+//    fs << "data1" << flowMapX;
+    
+    img1.setFromPixels(o);
+    img2.setFromPixels(t);
+
+    newImage.allocate(img1.width, img1.height, OF_IMAGE_COLOR);
+    
+    diff.allocate(img1.width, img1.height, OF_IMAGE_GRAYSCALE);
+  
+//    cout << ofGetElapsedTimef() - start << endl;
+//    ofExit();
   
 //    newFrame = two.clone();
 //    newFrame = cv::Mat::zeros(one.size(), CV_32F);
@@ -79,7 +114,13 @@ void ofApp::setup(){
 }
 
 void ofApp::getMap(cv::Mat &one, cv::Mat &two) {
-    cv::calcOpticalFlowFarneback(one, two, flow, 0.5, 3, 15, 3, 5, 1.2, 0);
+
+    vector<cv::Mat> ochannels, tchannels;
+    cv::split(one, ochannels);
+    cv::split(two, tchannels);
+
+
+    cv::calcOpticalFlowFarneback(ochannels[0], tchannels[0], flow, 0.5, 3, 15, 3, 5, 1.2, 0);
 
 //    cout << flow.type() << endl;
 //    cout << CV_32FC2 << endl;
@@ -137,7 +178,7 @@ void ofApp::getMap(cv::Mat &one, cv::Mat &two) {
 void ofApp::update(){
 
     int d = 20;
-    float q = ofMap(mouseX, 0, ofGetWidth(), -d, d);
+    float q = ofMap(mouseX, 0, ofGetWidth(), 0, 1);
 //    float q = ofMap(mouseX, 0, ofGetWidth(), position, position+1);
     
 //    for (int i = 0; flowMapY.rows * flowMapY.cols; i++) {
@@ -154,9 +195,21 @@ void ofApp::update(){
         }
     }
     
+    fi.interploate(q,   newImage);
+    
+    unsigned char *i1 = img1.getPixels();
+    unsigned char *ni = newImage.getPixels();
+    unsigned char *dp = diff.getPixels();
+    for (int i = 0; i < img1.width * img1.height; i++) {
+        dp[i] = abs(i1[i] - ni[i]);
+    }
+    
+    diff.setFromPixels(dp, diff.width, diff.height, OF_IMAGE_GRAYSCALE);
+    
 //    tflowMapX = flowMapX * q;
 //    tflowMapY = flowMapY * q;
 }
+
 
 
 void ofApp::draw(){
@@ -164,14 +217,21 @@ void ofApp::draw(){
     img1.draw(10, 10);
     img2.draw(img1.width+20, 10);
     
-    result.draw(10, 20+img1.height);
+    diff.draw(10, 20+img1.height);
+    
+//    result.draw(10, 20+img1.height);
     
 //    newFrame = cv::Mat::zeros(one.size(), CV_32F);
-    cv::remap(one, newFrame, tflowMapX, tflowMapY, CV_INTER_LINEAR);
+//    cv::remap(one, newFrame, tflowMapX, tflowMapY, CV_INTER_LINEAR);
     
-    newImage.setFromPixels(newFrame.data, newImage.width, newImage.height, OF_IMAGE_GRAYSCALE);
+//    newImage.setFromPixels(newFrame.data, newImage.width, newImage.height, OF_IMAGE_COLOR);
     
-    newImage.draw(img1.width+20, img1.height+20);
+    if (ofGetKeyPressed()) {
+        img1.draw(img1.width+20, img1.height+20);
+    }
+    else {
+        newImage.draw(img1.width+20, img1.height+20);
+    }
     
     
 }
@@ -179,22 +239,6 @@ void ofApp::draw(){
 
 void ofApp::keyPressed(int key){
 
-    KEY(OF_KEY_UP, position++);
-    KEY(OF_KEY_DOWN, position--);
-    
-    for (int i = 0; i < flowMapX.cols; i++) {
-        for (int j = 0; j < flowMapX.rows; j++) {
-            tflowMapX.at<float>(j, i) = i - flowMapX.at<float>(j, i);
-            tflowMapY.at<float>(j, i) = j - flowMapY.at<float>(j, i);
-        }
-    }
-    
-    cv::remap(one, newFrame, tflowMapX, tflowMapY, CV_INTER_LINEAR);
-    
-    one = newFrame.clone();
-
-    
-    getMap(one, two);
     
     
 
