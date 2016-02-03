@@ -25,5 +25,6 @@ public:
     
     void getMap(cv::Mat &one, cv::Mat &two);
     
-    int position;
+    float position;
+    int steps;
 };

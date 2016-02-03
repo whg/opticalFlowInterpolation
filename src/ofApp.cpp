@@ -23,191 +23,84 @@ void ofApp::setup(){
 
     ofBackground(10);
     
-    player.loadMovie("/Users/whg/Code/of_v0.8.0_osx_release/examples/gl/multiTextureShaderExample/bin/data/fingers.mov");
-    
-    player.nextFrame();
+//    player.load("/Users/whg/Code/of_v0.8.0_osx_release/examples/gl/multiTextureShaderExample/bin/data/fingers.mov");
+//    
+//    player.nextFrame();
     
     
     int d = 2;
 
-    img1.loadImage("/Users/whg/Library/Containers/com.apple.PhotoBooth/Data/Pictures/Photo Booth Library/Pictures/Photo on 23-07-2015 at 19.53.jpg");
-    img1.resize(img1.width/d, img1.height/d);
-//    img1.setImageType(OF_IMAGE_GRAYSCALE);
-    ofxCvGrayscaleImage cvimg1;
-//    cvimg1.setFromPixels(img1.getPixels());
+    img1.load("/Users/whg/Library/Containers/com.apple.PhotoBooth/Data/Pictures/Photo Booth Library/Pictures/Photo on 23-07-2015 at 19.53.jpg");
+//    img1.load("/Users/whg/Pictures/Photo Booth Library/Pictures/Photo on 03-02-2016 at 21.50 #3.jpg");
+//    img1.loadImage("/Users/whg/Downloads/pigeon_exploding/frames/pigeon_explode clip 0054.png");
+    img1.resize(img1.getWidth()/d, img1.getHeight()/d);
+    img1.setImageType(OF_IMAGE_GRAYSCALE);
     
-//    IplImage *iplimg1 = cvimg1.getCvImage();
-//    one = cv::Mat(cvimg1.getCvImage(), true);
-    one = cv::Mat(img1.height, img1.width, CV_8UC3, img1.getPixels(), 0);
-    
-    img2.loadImage("/Users/whg/Library/Containers/com.apple.PhotoBooth/Data/Pictures/Photo Booth Library/Pictures/Photo on 23-07-2015 at 19.53 #2.jpg");
-    img2.resize(img2.width/d, img2.height/d);
-//    img2.setImageType(OF_IMAGE_GRAYSCALE);
-    ofxCvGrayscaleImage cvimg2;
-//    cvimg2.setFromPixels(img2.getPixels());
-    
-//    two = cv::Mat(cvimg2.getCvImage(), true);
-    two = cv::Mat(img2.height, img2.width, CV_8UC3, img2.getPixels(), 0);
-//    IplImage *iplimg2 = cvimg2.getCvImage();
-    
-//    CvMat *flow = cvCreateMat(img1.height, img1.width, CV_32FC2);
-//    cv::OutputArray
+    img2.load("/Users/whg/Library/Containers/com.apple.PhotoBooth/Data/Pictures/Photo Booth Library/Pictures/Photo on 23-07-2015 at 19.53 #2.jpg");
+//    img2.load("/Users/whg/Pictures/Photo Booth Library/Pictures/Photo on 03-02-2016 at 21.50 #2.jpg");
 
-//    cv::Mat one = cv::imread(ofToDataPath("FOOTBALL_UNGRADED_WALL 01.png", true));
-//    cv::Mat two = cv::imread(ofToDataPath("FOOTBALL_UNGRADED_WALL 02.png", true));
-//    cv::Mat out;
+//    img2.loadImage("/Users/whg/Downloads/pigeon_exploding/frames/pigeon_explode clip 0055.png");
+    img2.resize(img2.getWidth()/d, img2.getHeight()/d);
+    img2.setImageType(OF_IMAGE_GRAYSCALE);
 
     result.allocate(one.cols, one.rows, OF_IMAGE_COLOR);
 
 
-    fi = ofxFrameInterpolator(player.width, player.height);
+    fi = ofxFrameInterpolator(img1.getWidth(), img1.getHeight());
     
 //    fi.calcMap(img1, img2);
-    ofPixels o = player.getPixelsRef();
-    o.setImageType(OF_IMAGE_GRAYSCALE);
-    player.nextFrame();
-    ofPixels t = player.getPixelsRef();
-    t.setImageType(OF_IMAGE_GRAYSCALE);
-    fi.calcMap(o, t);
+//    ofPixels o = player.getPixels();
+//    o.setImageType(OF_IMAGE_GRAYSCALE);
+//    player.nextFrame();
+//    ofPixels t = player.getPixels();
+//    t.setImageType(OF_IMAGE_GRAYSCALE);
+    
+    
+//    fi.calcMap(o, t);
+    fi.calcMap(img1, img2);
 
     float start = ofGetElapsedTimef();
 
-//    flowMapX = one.clone(); //cv::Mat::zeros(flow.cols, flow.rows, CV_32F); // cv::Mat(flow.size(), CV_32F);
-//    flowMapY = one.clone(); //cv::Mat::zeros(flow.cols, flow.rows, CV_32F); //(flow.size(), CV_32F);
-    flowMapX.create(one.rows, one.cols, CV_32F);
-    flowMapY.create(one.rows, one.cols, CV_32F);
-    tflowMapX.create(one.rows, one.cols, CV_32F);
-    tflowMapY.create(one.rows, one.cols, CV_32F);
-    
-//    tflowMapX = one.clone();// flowMapX.clone();
-//    tflowMapY = one.clone();//flowMapY.clone();
 
-//    getMap(one, two);
+    newImage.allocate(img1.getWidth(), img1.getHeight(), OF_IMAGE_COLOR);
     
+    diff.allocate(img1.getWidth(), img1.getHeight(), OF_IMAGE_GRAYSCALE);
 
-    
-//    string filename = "/Users/whg/Desktop/out.yml.gz";
-//    cv::FileStorage fs(filename, cv::FileStorage::WRITE);
-//    
-//    fs << "data1" << flowMapX;
-    
-    img1.setFromPixels(o);
-    img2.setFromPixels(t);
-
-    newImage.allocate(img1.width, img1.height, OF_IMAGE_COLOR);
-    
-    diff.allocate(img1.width, img1.height, OF_IMAGE_GRAYSCALE);
-  
-//    cout << ofGetElapsedTimef() - start << endl;
-//    ofExit();
-  
-//    newFrame = two.clone();
-//    newFrame = cv::Mat::zeros(one.size(), CV_32F);
-
-//
-//    result.setFromPixels(flow., <#int w#>, <#int h#>, OF_PIXELS_GRAY)
-//    result.setFromPixels(flow.data, flow.cols, flow.rows, OF_IMAGE_);
-
-    ofSetWindowShape(img1.width*2 + 30, img1.height*2+30);
+    ofSetWindowShape(img1.getWidth()*2 + 30, img1.getHeight()*2+30);
     
     position = 0;
+    steps = 0;
 }
 
-void ofApp::getMap(cv::Mat &one, cv::Mat &two) {
 
-    vector<cv::Mat> ochannels, tchannels;
-    cv::split(one, ochannels);
-    cv::split(two, tchannels);
-
-
-    cv::calcOpticalFlowFarneback(ochannels[0], tchannels[0], flow, 0.5, 3, 15, 3, 5, 1.2, 0);
-
-//    cout << flow.type() << endl;
-//    cout << CV_32FC2 << endl;
-
-
-    ofVec2f min(1000), max(-1000);
-
-    for (int i = 0; i < flow.cols; i++) {
-        for (int j = 0; j < flow.rows; j++) {
-            
-            const cv::Point2f& p = flow.at<cv::Point2f>(j, i);
-            min.x = MIN(p.x, min.x);
-            min.y = MIN(p.y, min.y);
-            max.x = MAX(p.x, max.x);
-            max.y = MAX(p.y, max.y);
-        }
-    }
-    cout << min << endl;
-    cout << max << endl;
-
-    
-
-
-    for (int i = 0; i < flow.cols; i++) {
-        for (int j = 0; j < flow.rows; j++) {
-            
-            const cv::Point2f& p = flow.at<cv::Point2f>(j, i);
-            
-            ofColor col(ofMap(p.x, min.x, max.x, 0, 255), ofMap(p.y, min.y, max.y, 0, 255), 255);
-            result.setColor(i, j, col);
-            
-            flowMapX.at<float>(j, i) = p.x;
-            flowMapY.at<float>(j, i) = p.y;
-            
-            //            result.setColor(i, j, ofColor(p.x*, p.y, 0));
-            
-            //            cout << p.x << ", " << p.y << endl;
-            //            cout << col << endl;
-        }
-    }
-
-    result.update();
-    
-    int q = 1;
-    
-    for (int i = 0; i < flowMapX.cols; i++) {
-        for (int j = 0; j < flowMapX.rows; j++) {
-            tflowMapX.at<float>(j, i) = i + flowMapX.at<float>(j, i) * q;
-            tflowMapY.at<float>(j, i) = j
-            + flowMapY.at<float>(j, i) * q;
-        }
-    }
-}
 
 void ofApp::update(){
 
     int d = 20;
     float q = ofMap(mouseX, 0, ofGetWidth(), 0, 1);
-//    float q = ofMap(mouseX, 0, ofGetWidth(), position, position+1);
-    
-//    for (int i = 0; flowMapY.rows * flowMapY.cols; i++) {
-//        tflowMapX
-//    }
 
-    cout << q << endl;
-//    q = 1;
-//
-    for (int i = 0; i < flowMapX.cols; i++) {
-        for (int j = 0; j < flowMapX.rows; j++) {
-            tflowMapX.at<float>(j, i) = i - flowMapX.at<float>(j, i) * q;
-            tflowMapY.at<float>(j, i) = j - flowMapY.at<float>(j, i) * q;
-        }
+//    cout << q << endl;
+
+    fi.interploate(position,   newImage);
+    
+    position+= 0.01;
+    
+    if (position >= 0.1) {
+        position = 0;
+        steps++;
+        fi.calcMap(newImage, img2);
     }
     
-    fi.interploate(q,   newImage);
-    
-    unsigned char *i1 = img1.getPixels();
-    unsigned char *ni = newImage.getPixels();
-    unsigned char *dp = diff.getPixels();
-    for (int i = 0; i < img1.width * img1.height; i++) {
-        dp[i] = abs(i1[i] - ni[i]);
-    }
-    
-    diff.setFromPixels(dp, diff.width, diff.height, OF_IMAGE_GRAYSCALE);
-    
-//    tflowMapX = flowMapX * q;
-//    tflowMapY = flowMapY * q;
+//    unsigned char *i1 = img2.getPixels().getData();
+//    unsigned char *ni = newImage.getPixels().getData();
+//    unsigned char *dp = diff.getPixels().getData();
+//    for (int i = 0; i < img1.getWidth() * img1.getHeight(); i++) {
+//        dp[i] = abs(i1[i] - ni[i]);
+//    }
+//    
+//    diff.setFromPixels(dp, diff.getWidth(), diff.getHeight(), OF_IMAGE_GRAYSCALE);
+
+    ofSetWindowTitle(ofToString(ofGetFrameRate()));
 }
 
 
@@ -215,23 +108,19 @@ void ofApp::update(){
 void ofApp::draw(){
 
     img1.draw(10, 10);
-    img2.draw(img1.width+20, 10);
+    img2.draw(img1.getWidth()+20, 10);
     
-    diff.draw(10, 20+img1.height);
+//    diff.draw(10, 20+img1.getHeight());
+
+    ofDrawBitmapString(ofToString(position), 10, 20+img1.getHeight());
+    ofDrawBitmapString(ofToString(steps), 10, 30+img1.getHeight());
     
-//    result.draw(10, 20+img1.height);
-    
-//    newFrame = cv::Mat::zeros(one.size(), CV_32F);
-//    cv::remap(one, newFrame, tflowMapX, tflowMapY, CV_INTER_LINEAR);
-    
-//    newImage.setFromPixels(newFrame.data, newImage.width, newImage.height, OF_IMAGE_COLOR);
-    
-    if (ofGetKeyPressed()) {
-        img1.draw(img1.width+20, img1.height+20);
-    }
-    else {
-        newImage.draw(img1.width+20, img1.height+20);
-    }
+//    if (ofGetKeyPressed()) {
+//        img2.draw(img1.getWidth()+20, img1.getHeight()+20);
+//    }
+//    else {
+        newImage.draw(img1.getWidth()+20, img1.getHeight()+20);
+//    }
     
     
 }
@@ -240,7 +129,21 @@ void ofApp::draw(){
 void ofApp::keyPressed(int key){
 
     
+    //    fi.calcMap(img1, img2);
+//    ofPixels o = player.getPixels();
+//    o.setImageType(OF_IMAGE_GRAYSCALE);
+//    player.nextFrame();
+//    ofPixels t = player.getPixels();
+//    t.setImageType(OF_IMAGE_GRAYSCALE);
     
+//    fi = ofxFrameInterpolator(img1.getWidth(), img1.getHeight());
+
+    
+    //    fi.calcMap(o, t);
+    
+    KEY('n', fi.calcMap(newImage, img2));
+    KEY('r', fi.calcMap(img1, img2));
+
 
 }
 
